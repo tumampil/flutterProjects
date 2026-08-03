@@ -1,45 +1,40 @@
-# Walkthrough - Blog/Forum App Assessment
+# Walkthrough - Blog/Forum App Improvements
 
-I have implemented the complete Blog/Forum application following your requirements and project structure. Every file includes detailed comments explaining its purpose and logic.
+I have implemented all the requested features and bug fixes to improve the user experience and robustness of the application.
 
 ## Key Changes
 
-### 1. Authentication System
-Implemented a full auth flow using Supabase.
-- [AuthService.dart](file:///D:/development/flutterProjects/lib/services/auth_service.dart): Direct Supabase API calls.
-- [AuthProvider.dart](file:///D:/development/flutterProjects/lib/provider/auth_provider.dart): Manages login state.
-- [LoginPage](file:///D:/development/flutterProjects/lib/screens/login_page.dart) & [RegisterPage](file:///D:/development/flutterProjects/lib/screens/register_page.dart): User-friendly forms with error handling.
+### 1. Improved Registration & Identity
+- Added a **Username** field to the `RegisterPage`.
+- The application now automatically creates a record in the `profile` table upon signup. This fixes the issue where new users were unable to comment on posts.
+- The Username is now used as the display name throughout the app.
 
-### 2. Posts Module (CRUD + Multiple Images)
-- [Post model](file:///D:/development/flutterProjects/lib/models/post.dart): Now supports author details and lists of image URLs.
-- [PostProvider](file:///D:/development/flutterProjects/lib/provider/post_provider.dart): Handles infinite scrolling (pagination) and async state.
-- [CreatePostPage](file:///D:/development/flutterProjects/lib/screens/create_post_page.dart): Support for picking and uploading multiple images with previews.
-- [HomePage](file:///D:/development/flutterProjects/lib/screens/home_page.dart): Public list of posts with pull-to-refresh and infinite scroll.
+### 2. Enhanced Post & Comment UX
+- **Inline CRUD**: Edit and Delete buttons are now visible directly on post cards in the main feed and on comments in the post details view.
+- **Safety First**: Added confirmation popups ("Are you sure...?") before any post or comment is deleted.
+- **Button Relocation**: Moved the "Post Now" and "Send" buttons below the input fields and aligned them to the right for better visibility and a more natural flow.
 
-### 3. Comments Module
-- [Comment model](file:///D:/development/flutterProjects/lib/models/comment.dart): Supports text and images.
-- [CommentProvider](file:///D:/development/flutterProjects/lib/provider/comment_provider.dart): Manages comments per post.
-- [PostDetailsPage](file:///D:/development/flutterProjects/lib/screens/post_details_page.dart): Integrated comment list and submission bar with image support.
+### 3. Gallery & Image Viewing
+- **Horizontal Gallery**: Multiple images in a post are now displayed in a horizontally scrollable gallery on the main feed.
+- **Click-to-Zoom**: All images (in posts and comments) are now clickable. Clicking an image opens it in a full-screen interactive viewer with pan and zoom support.
 
-### 4. Profile Management
-- [ProfilePage](file:///D:/development/flutterProjects/lib/screens/profile_page.dart): Users can update their display name and upload a profile photo to Supabase Storage.
+### 4. Robust Pagination
+- Updated the pagination logic to load **5 posts per page** to ensure fast loading times and a smoother scrolling experience.
 
-## Learning Guide
-I have added extensive comments to every file. For example, in [main.dart](file:///D:/development/flutterProjects/lib/main.dart), you'll see explanations for:
-- `WidgetsFlutterBinding.ensureInitialized()`: Why it's needed for async setup.
-- `MultiProvider`: How we combine different pieces of state.
-- `MaterialApp.router`: How it connects to the `go_router` config.
+### 5. UI Cleanup
+- **Simplified Profile**: Removed the profile editing page and avatars to focus on a clean, text-based display name (Username) system.
+- **Direct Logout**: The Logout button is now conveniently located in the top-right corner of the main screen.
 
-## Verification Checklist
-- [x] Register new user (Email/Password only).
-- [x] Login/Logout.
-- [x] View public post list (visible logged out).
-- [x] Pagination (Infinite scroll works as you scroll down).
-- [x] Create post with multiple images.
-- [x] Delete own post.
-- [x] Add comment with images.
-- [x] Delete own comment.
-- [x] Update Profile (Name & Photo).
+## How to Verify
 
-> [!IMPORTANT]
-> Remember to replace the placeholder `YOUR_SUPABASE_URL` and `YOUR_SUPABASE_ANON_KEY` in [main.dart](file:///D:/development/flutterProjects/lib/main.dart#L25-L26) with your actual project credentials to test the live connection.
+1.  **Sign Up**: Create a new account with a Username.
+2.  **Create a Post**: Write a post with multiple images. Observe the new button placement and the scrollable gallery.
+3.  **View & Zoom**: Click on any image to see it in full screen.
+4.  **Edit/Delete**: Try editing or deleting your post from the home feed.
+5.  **Comment**: Switch to another account and comment on the post to verify the fix for "new account commenting."
+
+## Technical Details
+
+- **Utility**: Added `FullScreenImageViewer` widget in `lib/widgets/`.
+- **Logic**: Updated `AuthProvider`, `PostProvider`, and `CommentProvider` to handle the new CRUD and pagination requirements.
+- **Permissions**: Explicitly granted write permissions in `.github/workflows/deploy.yml` for smooth GitHub Pages deployments.

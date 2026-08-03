@@ -1,32 +1,34 @@
-# Task List - Blog/Forum App Implementation
+# Task List - Blog/Forum App Improvements
 
-## Phase 1: Supabase Setup & Authentication
-- [x] Initialize Supabase in `main.dart`
-- [x] Create `AuthService` (Supabase logic)
-- [x] Create `AuthProvider` (State management)
-- [x] Update `main.dart` with Providers
-- [x] Create `RegisterPage` UI
-- [x] Update `LoginPage` UI
-- [x] Configure `GoRouter` with Auth Guard
+## Phase 1: Registration & Identity
+- [x] Add Username field to `RegisterPage` UI
+- [x] Update `AuthProvider` to handle username
+- [x] Update `AuthService` to create profile record on signup
+- [x] Fix "cannot comment" issue for new accounts
 
-## Phase 2: Profile Module
-- [x] Create `ProfileProvider`
-- [x] Create `ProfilePage` UI (Update Name & Avatar)
+## Phase 2: Post Module Enhancements
+- [x] Add Edit/Delete buttons to `PostCard` in home feed
+- [x] Implement Delete confirmation popup for Posts
+- [x] Update `PostProvider` pagination to 5 posts per page
+- [x] Move Post button in `CreatePostPage` below input field
+- [x] Implement horizontally scrollable gallery for multiple images in `PostCard`
 
-## Phase 3: Posts Module
-- [x] Update `Post` model
-- [x] Create `PostService` (CRUD logic)
-- [x] Update `PostProvider` (Async logic & Pagination)
-- [x] Update `HomePage` (List view, images, pagination)
-- [x] Create `PostDetailsPage`
+## Phase 3: Comment Module Enhancements
+- [x] Add Edit/Delete buttons for comments in `PostDetailsPage`
+- [x] Implement Delete confirmation popup for Comments
+- [x] Move Send button below comment input field
+- [x] Make comment images clickable for full-size viewing
 
-## Phase 4: Comments Module
-- [x] Create `Comment` model
-- [x] Create `CommentService`
-- [x] Create `CommentProvider`
-- [x] Integrate comments into `PostDetailsPage`
+## Phase 4: Image Viewing & UI Cleanup
+- [x] Create `FullScreenImageViewer` utility widget
+- [x] Make all images clickable in Posts and Comments
+- [x] Delete `ProfilePage` and remove its route
+- [x] Move Logout button to `HomePage` AppBar
+- [x] Update UI to show Username (Full Name) and remove all avatars
 
-## Phase 5: Deployment & Review
-- [x] Final code cleanup and documentation check
-- [x] Simplification Pass: Making comments easier for beginners
-- [x] Verify all assessment requirements are met
+## Phase 5: Verification & Final Deployment
+- [ ] Verify Registration flow with automatic profile creation
+- [ ] Verify Edit/Delete CRUD for both Posts and Comments
+- [ ] Verify Pagination (5 posts per page)
+- [ ] Verify Image gallery and full-screen view
+- [ ] Final push to GitHub for auto-deployment

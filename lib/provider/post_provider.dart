@@ -35,11 +35,11 @@ class PostProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final fetchedPosts = await _postService.getPosts(page: _currentPage);
+      final fetchedPosts = await _postService.getPosts(page: _currentPage, pageSize: 5);
       _posts = fetchedPosts;
       
-      // If we got fewer than 10 posts, it means we reached the end of the list.
-      if (fetchedPosts.length < 10) _hasMore = false;
+      // If we got fewer than 5 posts, it means we reached the end of the list.
+      if (fetchedPosts.length < 5) _hasMore = false;
     } catch (e) {
       _errorMessage = e.toString();
       debugPrint('Error fetching posts: $e');
@@ -59,13 +59,13 @@ class PostProvider extends ChangeNotifier {
 
     try {
       _currentPage++; // Go to the next page.
-      final morePosts = await _postService.getPosts(page: _currentPage);
+      final morePosts = await _postService.getPosts(page: _currentPage, pageSize: 5);
       
       if (morePosts.isEmpty) {
         _hasMore = false; // No more posts to load.
       } else {
         _posts.addAll(morePosts); // Add the new posts to our current list.
-        if (morePosts.length < 10) _hasMore = false;
+        if (morePosts.length < 5) _hasMore = false;
       }
     } catch (e) {
       debugPrint('Error fetching more posts: $e');
@@ -105,6 +105,46 @@ class PostProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  // UPDATE POST: Change content and images.
+  Future<bool> updatePost({
+    required String postId,
+    required String content,
+    required List<String> imageUrls,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _postService.updatePost(
+        postId: postId,
+        content: content,
+        imageUrls: imageUrls,
+      );
+      
+      // Update local list
+      final index = _posts.indexWhere((p) => p.id == postId);
+      if (index != -1) {
+        // We just refresh the whole list to be sure and get profile info joined.
+        await fetchPosts();
+      }
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      debugPrint('Error updating post: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // UPLOAD IMAGES HELPER: Expose the service upload to the UI.
+  Future<List<String>> uploadPostImages(List<XFile> images, String userId) async {
+    if (images.isEmpty) return [];
+    return await _postService.uploadPostImages(images, userId);
   }
 
   // DELETE POST: Remove from database and then from our local list.

@@ -8,9 +8,9 @@ import 'package:go_router/go_router.dart';
 import '../screens/home_page.dart';
 import '../screens/login_page.dart';
 import '../screens/register_page.dart';
-import '../screens/profile_page.dart';
 import '../screens/create_post_page.dart';
 import '../screens/post_details_page.dart';
+import '../models/post.dart';
 
 // This handles the navigation paths.
 final GoRouter appRouter = GoRouter(
@@ -42,19 +42,13 @@ final GoRouter appRouter = GoRouter(
       },
     ),
 
-    // PROFILE PAGE: Where users edit their name/photo.
-    GoRoute(
-      path: '/profile',
-      builder: (context, state) {
-        return const ProfilePage();
-      },
-    ),
-
     // CREATE POST PAGE: Where you write a new post.
     GoRoute(
       path: '/create-post',
       builder: (context, state) {
-        return const CreatePostPage();
+        // Handle editing an existing post if one was passed.
+        final postToEdit = state.extra as Post?;
+        return CreatePostPage(postToEdit: postToEdit);
       },
     ),
 

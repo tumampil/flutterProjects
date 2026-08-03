@@ -14,19 +14,23 @@ class CommentProvider extends ChangeNotifier {
   // 2. Variables to store the current comments and loading status.
   List<Comment> _comments = [];
   bool _isLoading = false;
+  String? _errorMessage;
 
   // 3. Simple ways for the UI to read our info.
   List<Comment> get comments => _comments;
   bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
 
   // FETCH: Get all comments for a post when the page opens.
   Future<void> fetchComments(String postId) async {
     _isLoading = true; // Tell the UI to show a loader.
+    _errorMessage = null;
     notifyListeners();
 
     try {
       _comments = await _commentService.getComments(postId);
     } catch (e) {
+      _errorMessage = e.toString();
       debugPrint('Error fetching comments: $e');
     } finally {
       _isLoading = false; // Hide the loader.
@@ -35,13 +39,14 @@ class CommentProvider extends ChangeNotifier {
   }
 
   // ADD: Upload images and save the comment text.
-  Future<void> addComment({
+  Future<bool> addComment({
     required String postId,
     required String userId,
     required String content,
     required List<XFile> images,
   }) async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
@@ -58,12 +63,50 @@ class CommentProvider extends ChangeNotifier {
       
       // 3. Reload comments so the new one appears immediately.
       await fetchComments(postId);
+      return true;
     } catch (e) {
+      _errorMessage = e.toString();
       debugPrint('Error adding comment: $e');
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  // UPDATE: Edit an existing comment.
+  Future<bool> updateComment({
+    required String commentId,
+    required String postId,
+    required String content,
+    required List<String> imageUrls,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _commentService.updateComment(
+        commentId: commentId,
+        content: content,
+        imageUrls: imageUrls,
+      );
+      await fetchComments(postId);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      debugPrint('Error updating comment: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // UPLOAD HELPER:
+  Future<List<String>> uploadCommentImages(List<XFile> images, String userId) async {
+    if (images.isEmpty) return [];
+    return await _commentService.uploadCommentImages(images, userId);
   }
 
   // DELETE: Remove a comment and refresh the list.

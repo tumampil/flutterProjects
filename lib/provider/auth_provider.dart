@@ -25,14 +25,18 @@ class AuthProvider extends ChangeNotifier {
     _user = _authService.currentUser;
   }
 
-  // SIGN UP: Try to make a new account.
-  Future<void> register(String email, String password) async {
+  // SIGN UP: Try to make a new account with a username.
+  Future<void> register(String email, String password, String username) async {
     _setLoading(true); // Tell the app to show a loading spinner.
     _clearError();     // Remove any old error messages.
 
     try {
       // Call the service to do the signup.
-      final response = await _authService.signUp(email: email, password: password);
+      final response = await _authService.signUp(
+        email: email, 
+        password: password,
+        username: username,
+      );
       _user = response.user; // If it worked, save the user info.
       notifyListeners();      // Tell all pages to update their look.
     } catch (e) {

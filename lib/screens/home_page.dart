@@ -58,12 +58,12 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('Forum App'),
         actions: [
-          // 5. If logged in, show the Profile button. If not, show the Login button.
+          // 5. If logged in, show the Logout button. If not, show the Login button.
           if (auth.user != null)
             IconButton(
-              icon: const Icon(Icons.person),
-              tooltip: 'Profile',
-              onPressed: () => context.push('/profile'),
+              icon: const Icon(Icons.logout),
+              tooltip: 'Logout',
+              onPressed: () => auth.logout(),
             )
           else
             TextButton(

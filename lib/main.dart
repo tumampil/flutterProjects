@@ -9,7 +9,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 // Import our "Brains" (Providers) that hold our app data
 import 'provider/post_provider.dart';
 import 'provider/auth_provider.dart';
-import 'provider/profile_provider.dart';
 import 'provider/comment_provider.dart';
 
 // Import our "GPS" (Router) that knows how to move between pages
@@ -43,9 +42,6 @@ void main() async {
         
         // This holds all the posts and helps with loading them
         ChangeNotifierProvider(create: (_) => PostProvider()),
-
-        // This holds the user's name and profile picture
-        ChangeNotifierProvider(create: (_) => ProfileProvider()),
 
         // This holds the comments for the posts
         ChangeNotifierProvider(create: (_) => CommentProvider()),

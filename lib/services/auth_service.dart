@@ -14,16 +14,30 @@ class AuthService {
   // 3. A simple way to get the logged-in user's info (like their email).
   User? get currentUser => _supabase.auth.currentUser;
 
-  // SIGN UP: This creates a new account using an email and password.
+  // SIGN UP: This creates a new account using an email, password, and username.
   Future<AuthResponse> signUp({
     required String email,
     required String password,
+    required String username,
   }) async {
-    // We tell Supabase: "Please make a new user with this email and password."
-    return await _supabase.auth.signUp(
+    // 1. Tell Supabase: "Please make a new user."
+    // We add the username to 'data' so it's stored in the Auth system too.
+    final response = await _supabase.auth.signUp(
       email: email,
       password: password,
+      data: {'full_name': username},
     );
+
+    // 2. If it worked, we manually create a row in our 'profile' table.
+    // This ensures the user can immediately start posting and commenting.
+    if (response.user != null) {
+      await _supabase.from('profile').upsert({
+        'id': response.user!.id,
+        'full_name': username,
+      });
+    }
+
+    return response;
   }
 
   // LOGIN: This checks if the user's email and password are correct.

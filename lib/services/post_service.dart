@@ -10,7 +10,7 @@ class PostService {
 
   // FETCH: Get a list of posts from the database.
   // We use "pagination" to only get a few posts at a time so the app stays fast.
-  Future<List<Post>> getPosts({int page = 0, int pageSize = 10}) async {
+  Future<List<Post>> getPosts({int page = 0, int pageSize = 5}) async {
     // 1. Calculate which posts to get (e.g., from #0 to #9).
     final from = page * pageSize;
     final to = from + pageSize - 1;
@@ -18,7 +18,7 @@ class PostService {
     // 2. Ask Supabase for the posts.
     final response = await _supabase
         .from('posts')
-        .select('*, profile(full_name, avatar_url)') // Also get the author's info.
+        .select('*, profile(full_name)') // Only get the author's name.
         .order('created_at', ascending: false) // Show newest posts first.
         .range(from, to);
 

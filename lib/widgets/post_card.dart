@@ -3,7 +3,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../models/post.dart';
+import '../provider/auth_provider.dart';
+import '../provider/post_provider.dart';
+import 'full_screen_image_viewer.dart';
 
 class PostCard extends StatelessWidget {
   final Post post;
@@ -11,45 +16,84 @@ class PostCard extends StatelessWidget {
 
   const PostCard({super.key, required this.post, this.onTap});
 
+  // Show a confirmation popup before deleting.
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Post'),
+        content: const Text('Are you sure you want to delete this post?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<PostProvider>().deletePost(post.id);
+              Navigator.pop(context);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final currentUserId = context.watch<AuthProvider>().user?.id;
+    final isAuthor = currentUserId == post.authorId;
+
     return Card(
-      elevation: 2, // Gives the card a small shadow
+      elevation: 2,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: onTap, // Runs when you click anywhere on the card.
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // HEADER: Author's Name and Date
+              // HEADER: Author's Name, Date and Actions
               Row(
                 children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.blue[100],
-                    backgroundImage: post.authorAvatar != null
-                        ? NetworkImage(post.authorAvatar!)
-                        : null,
-                    child: post.authorAvatar == null ? const Icon(Icons.person, color: Colors.blue) : null,
-                  ),
+                  const Icon(Icons.person, color: Colors.blue, size: 40),
                   const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        post.authorName ?? 'Anonymous',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      Text(
-                        DateFormat.yMMMd().add_jm().format(post.createdAt),
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          post.authorName ?? 'Anonymous',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        Text(
+                          DateFormat.yMMMd().add_jm().format(post.createdAt),
+                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                        ),
+                      ],
+                    ),
                   ),
+                  // EDIT/DELETE BUTTONS (Only for author)
+                  if (isAuthor)
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined, color: Colors.blue, size: 20),
+                          onPressed: () {
+                            // Navigate to create-post page but in "edit" mode.
+                            context.push('/create-post', extra: post);
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                          onPressed: () => _showDeleteConfirmation(context),
+                        ),
+                      ],
+                    ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -57,37 +101,47 @@ class PostCard extends StatelessWidget {
               // BODY: The Post Text
               Text(
                 post.content,
-                maxLines: 3, // Only show 3 lines in the list view.
-                overflow: TextOverflow.ellipsis, // Add "..." if the text is too long.
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 15, height: 1.4),
               ),
               const SizedBox(height: 12),
 
-              // IMAGES: A horizontal scrolling row for the post's photos.
+              // IMAGES: A horizontally scrollable row
               if (post.imageUrls.isNotEmpty)
                 SizedBox(
-                  height: 160,
+                  height: 180,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: post.imageUrls.length,
                     itemBuilder: (context, index) {
                       return Padding(
                         padding: const EdgeInsets.only(right: 8.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            post.imageUrls[index],
-                            width: 240,
-                            fit: BoxFit.cover,
-                            // Show a gray box while the image is loading.
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Container(
-                                width: 240,
-                                color: Colors.grey[200],
-                                child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                              );
-                            },
+                        child: GestureDetector(
+                          onTap: () {
+                            // Open image in full screen.
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => FullScreenImageViewer(imageUrl: post.imageUrls[index]),
+                              ),
+                            );
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              post.imageUrls[index],
+                              width: 280,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  width: 280,
+                                  color: Colors.grey[200],
+                                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                );
+                              },
+                            ),
                           ),
                         ),
                       );

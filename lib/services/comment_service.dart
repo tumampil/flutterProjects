@@ -12,7 +12,7 @@ class CommentService {
   Future<List<Comment>> getComments(String postId) async {
     final response = await _supabase
         .from('comments')
-        .select('*, profile(full_name, avatar_url)') // Get profile info too.
+        .select('*, profile(full_name)') // Get profile info too.
         .eq('post_id', postId) // Only get comments for THIS post.
         .order('created_at', ascending: true); // Oldest comments first.
 
@@ -32,6 +32,18 @@ class CommentService {
       'content': content,
       'image_urls': imageUrls,
     });
+  }
+
+  // UPDATE: Change an existing comment.
+  Future<void> updateComment({
+    required String commentId,
+    required String content,
+    required List<String> imageUrls,
+  }) async {
+    await _supabase.from('comments').update({
+      'content': content,
+      'image_urls': imageUrls,
+    }).eq('id', commentId);
   }
 
   // DELETE: Remove a comment from the database.
