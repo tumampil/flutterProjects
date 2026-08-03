@@ -9,9 +9,8 @@ class Post {
   // 2. The ID of the person who wrote it.
   final String authorId;
   
-  // 3. The name and photo of the author (from the database).
+  // 3. The name of the author (from the database).
   final String? authorName;
-  final String? authorAvatar;
   
   // 4. The actual words in the post.
   final String content;
@@ -26,7 +25,6 @@ class Post {
     required this.id,
     required this.authorId,
     this.authorName,
-    this.authorAvatar,
     required this.content,
     required this.imageUrls,
     required this.createdAt,
@@ -38,9 +36,8 @@ class Post {
       id: json['id'],
       authorId: json['author_id'],
       
-      // These come from a different table (Profiles) that was joined with the Posts table.
+      // This comes from a different table (Profile) that was joined with the Posts table.
       authorName: json['profile']?['full_name'],
-      authorAvatar: json['profile']?['avatar_url'],
       
       content: json['content'] ?? '',
       

@@ -1,6 +1,6 @@
 // FILE: post_details_page.dart
 // PURPOSE: This page shows one post in detail and all the comments written for it.
-// It also has a box at the bottom to write or edit a comment.
+// It also has a box for users to write or edit their own comments.
 
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -8,7 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
-// Import providers to get the post info and comments.
+// Import our "Brains" (Providers) and Models
 import '../provider/auth_provider.dart';
 import '../provider/comment_provider.dart';
 import '../provider/post_provider.dart';
@@ -23,6 +23,7 @@ class PostDetailsPage extends StatefulWidget {
   State<PostDetailsPage> createState() => _PostDetailsPageState();
 }
 
+// A small helper to hold image info for previews
 class SelectedCommentImage {
   final XFile? file;
   final Uint8List? bytes;
@@ -35,12 +36,12 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
   final List<SelectedCommentImage> _commentImages = [];
   final ImagePicker _picker = ImagePicker();
   
-  // Track if we are currently editing a comment.
-  Comment? _editingComment;
+  Comment? _editingComment; // Keeps track if we are currently editing a comment.
 
   @override
   void initState() {
     super.initState();
+    // Load the comments as soon as the page opens.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CommentProvider>().fetchComments(widget.postId);
     });
@@ -52,6 +53,7 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
     super.dispose();
   }
 
+  // Runs when the "Send" or "Save" button is clicked.
   void _onAddComment() async {
     final content = _commentController.text.trim();
     final userId = context.read<AuthProvider>().user?.id;
@@ -63,7 +65,7 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
       bool success = false;
 
       if (_editingComment != null) {
-        // UPDATE COMMENT
+        // --- EDITING MODE ---
         final newFiles = _commentImages.where((e) => e.file != null).map((e) => e.file!).toList();
         final existingUrls = _commentImages.where((e) => e.url != null).map((e) => e.url!).toList();
         
@@ -75,16 +77,17 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
           imageUrls: [...existingUrls, ...newUrls],
         );
       } else {
-        // ADD COMMENT
+        // --- ADDING MODE ---
         success = await commentProvider.addComment(
           postId: widget.postId,
           userId: userId,
           content: content,
-          images: _commentImages.map((e) => e.file!).toList(),
+          images: _commentImages.where((e) => e.file != null).map((e) => e.file!).toList(),
         );
       }
       
       if (success) {
+        // Clear everything if successful.
         setState(() {
           _commentController.clear();
           _commentImages.clear();
@@ -98,6 +101,7 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
     }
   }
 
+  // Fill the input box with the comment info to start editing.
   void _onEditComment(Comment comment) {
     setState(() {
       _editingComment = comment;
@@ -109,6 +113,7 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
     });
   }
 
+  // Show a popup to make sure the user really wants to delete.
   void _showDeleteCommentConfirmation(Comment comment) {
     showDialog(
       context: context,
@@ -157,7 +162,7 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // POST HEADER
+                  // 1. POST HEADER (Author and Date)
                   Row(
                     children: [
                       const Icon(Icons.person, color: Colors.blue, size: 30),
@@ -173,11 +178,11 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
                   ),
                   const SizedBox(height: 16),
                   
-                  // POST TEXT
+                  // 2. THE POST TEXT
                   Text(post.content, style: const TextStyle(fontSize: 18)),
                   const SizedBox(height: 16),
                   
-                  // POST PHOTOS (Horizontal scrollable)
+                  // 3. POST PHOTOS (Horizontal scrollable gallery)
                   if (post.imageUrls.isNotEmpty)
                     SizedBox(
                       height: 180,
@@ -197,13 +202,119 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
                       ),
                     ),
                   
-                  const Divider(height: 48),
-                  const Text('Comments', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  const Divider(height: 32),
+
+                  // 4. COMMENT INPUT BOX (Moved above comments list for better UX)
+                  if (auth.user != null)
+                    Card(
+                      elevation: 0,
+                      color: Colors.grey[50],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: Colors.grey[200]!),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (_editingComment != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.edit, size: 14, color: Colors.blue),
+                                    const SizedBox(width: 4),
+                                    const Text('Editing comment...', style: TextStyle(color: Colors.blue, fontSize: 12)),
+                                    const Spacer(),
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        _editingComment = null;
+                                        _commentController.clear();
+                                        _commentImages.clear();
+                                      }),
+                                      child: const Text('Cancel', style: TextStyle(color: Colors.red, fontSize: 12)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            TextField(
+                              controller: _commentController,
+                              decoration: const InputDecoration(
+                                hintText: 'Write a comment...',
+                                border: InputBorder.none,
+                              ),
+                              maxLines: 3,
+                            ),
+                            const SizedBox(height: 8),
+                            
+                            // Image Previews for the comment being written
+                            if (_commentImages.isNotEmpty)
+                              SizedBox(
+                                height: 50,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: _commentImages.length,
+                                  itemBuilder: (context, index) => Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: Stack(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(4), 
+                                          child: _commentImages[index].url != null
+                                              ? Image.network(_commentImages[index].url!, width: 50, height: 50, fit: BoxFit.cover)
+                                              : Image.memory(_commentImages[index].bytes!, width: 50, height: 50, fit: BoxFit.cover),
+                                        ),
+                                        Positioned(right: 0, top: 0, child: GestureDetector(onTap: () => setState(() => _commentImages.removeAt(index)), child: Container(color: Colors.black54, child: const Icon(Icons.close, size: 14, color: Colors.white)))),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.add_a_photo_outlined, color: Colors.grey),
+                                  onPressed: () async {
+                                    final picked = await _picker.pickMultiImage();
+                                    if (picked.isNotEmpty) {
+                                      for (var x in picked) {
+                                        final b = await x.readAsBytes();
+                                        setState(() => _commentImages.add(SelectedCommentImage(file: x, bytes: b)));
+                                      }
+                                    }
+                                  },
+                                ),
+                                ElevatedButton(
+                                  onPressed: commentProvider.isLoading ? null : _onAddComment,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                  ),
+                                  child: commentProvider.isLoading
+                                      ? const SizedBox(width: 15, height: 15, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                      : Text(_editingComment != null ? 'Save' : 'Post Comment'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  const SizedBox(height: 24),
+                  const Text('Comments', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  // LIST OF COMMENTS
+                  // 5. LIST OF EXISTING COMMENTS
                   if (commentProvider.isLoading && commentProvider.comments.isEmpty)
                     const Center(child: CircularProgressIndicator())
+                  else if (commentProvider.comments.isEmpty)
+                    const Center(child: Text('No comments yet. Be the first to reply!', style: TextStyle(color: Colors.grey)))
                   else
                     ListView.builder(
                       shrinkWrap: true,
@@ -214,7 +325,10 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
                         final isOwnComment = auth.user?.id == comment.authorId;
 
                         return Card(
+                          elevation: 0,
+                          color: Colors.grey[50],
                           margin: const EdgeInsets.only(bottom: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           child: Padding(
                             padding: const EdgeInsets.all(12),
                             child: Column(
@@ -248,6 +362,7 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
                                     padding: const EdgeInsets.only(top: 8.0),
                                     child: Wrap(
                                       spacing: 4,
+                                      runSpacing: 4,
                                       children: comment.imageUrls.map((url) => GestureDetector(
                                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FullScreenImageViewer(imageUrl: url))),
                                         child: ClipRRect(
@@ -267,95 +382,6 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
               ),
             ),
           ),
-
-          // COMMENT INPUT BAR
-          if (auth.user != null)
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: const Offset(0, -2))]),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (_editingComment != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.edit, size: 14, color: Colors.blue),
-                          const SizedBox(width: 4),
-                          const Text('Editing comment...', style: TextStyle(color: Colors.blue, fontSize: 12)),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: () => setState(() {
-                              _editingComment = null;
-                              _commentController.clear();
-                              _commentImages.clear();
-                            }),
-                            child: const Text('Cancel', style: TextStyle(color: Colors.red, fontSize: 12)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  TextField(
-                    controller: _commentController,
-                    decoration: const InputDecoration(
-                      hintText: 'Write a comment...',
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.add_a_photo_outlined),
-                        onPressed: () async {
-                          final picked = await _picker.pickMultiImage();
-                          if (picked.isNotEmpty) {
-                            for (var x in picked) {
-                              final b = await x.readAsBytes();
-                              setState(() => _commentImages.add(SelectedCommentImage(file: x, bytes: b)));
-                            }
-                          }
-                        },
-                      ),
-                      if (_commentImages.isNotEmpty)
-                        Expanded(
-                          child: SizedBox(
-                            height: 50,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _commentImages.length,
-                              itemBuilder: (context, index) => Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(4), 
-                                      child: _commentImages[index].url != null
-                                          ? Image.network(_commentImages[index].url!, width: 50, height: 50, fit: BoxFit.cover)
-                                          : Image.memory(_commentImages[index].bytes!, width: 50, height: 50, fit: BoxFit.cover),
-                                    ),
-                                    Positioned(right: 0, top: 0, child: GestureDetector(onTap: () => setState(() => _commentImages.removeAt(index)), child: Container(color: Colors.black54, child: const Icon(Icons.close, size: 14, color: Colors.white)))),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                      else
-                        const Spacer(),
-                      ElevatedButton(
-                        onPressed: commentProvider.isLoading ? null : _onAddComment,
-                        child: commentProvider.isLoading
-                            ? const SizedBox(width: 15, height: 15, child: CircularProgressIndicator(strokeWidth: 2))
-                            : Text(_editingComment != null ? 'Save' : 'Send'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );

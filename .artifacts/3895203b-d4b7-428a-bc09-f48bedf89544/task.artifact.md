@@ -1,4 +1,4 @@
-# Task List - Blog/Forum App Improvements
+# Task List - Blog/Forum App Improvements (v2)
 
 ## Phase 1: Registration & Identity
 - [x] Add Username field to `RegisterPage` UI
@@ -12,8 +12,10 @@
 - [x] Update `PostProvider` pagination to 5 posts per page
 - [x] Move Post button in `CreatePostPage` below input field
 - [x] Implement horizontally scrollable gallery for multiple images in `PostCard`
+- [ ] Implement Edit mode logic in `CreatePostPage` (pre-fill data)
 
-## Phase 3: Comment Module Enhancements
+## Phase 3: Comment Module & UX Enhancements
+- [x] Move comment input box above the comments list (Natural flow)
 - [x] Add Edit/Delete buttons for comments in `PostDetailsPage`
 - [x] Implement Delete confirmation popup for Comments
 - [x] Move Send button below comment input field

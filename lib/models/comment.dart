@@ -12,9 +12,8 @@ class Comment {
   // 3. The ID of the user who wrote the comment.
   final String authorId;
   
-  // 4. The author's name and profile photo (from the database).
+  // 4. The author's name (from the database).
   final String? authorName;
-  final String? authorAvatar;
   
   // 5. The actual text written in the comment.
   final String content;
@@ -30,7 +29,6 @@ class Comment {
     required this.postId,
     required this.authorId,
     this.authorName,
-    this.authorAvatar,
     required this.content,
     required this.imageUrls,
     required this.createdAt,
@@ -43,9 +41,8 @@ class Comment {
       postId: json['post_id'],
       authorId: json['author_id'],
       
-      // These come from joining the Comments table with the Profiles table.
+      // These come from joining the Comments table with the Profile table.
       authorName: json['profile']?['full_name'],
-      authorAvatar: json['profile']?['avatar_url'],
       
       content: json['content'] ?? '',
       

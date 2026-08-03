@@ -60,7 +60,7 @@ class PostCard extends StatelessWidget {
               // HEADER: Author's Name, Date and Actions
               Row(
                 children: [
-                  const Icon(Icons.person, color: Colors.blue, size: 40),
+                  const Icon(Icons.person_outline, color: Colors.blue, size: 30),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
