@@ -13,16 +13,25 @@ class PostService {
     final from = page * pageSize;
     final to = from + pageSize - 1;
 
-    // We use 'count: CountOption.exact' to know how many total posts exist.
-    final response = await _supabase
+    // 1. Get the actual posts
+    final postsResponse = await _supabase
         .from('posts')
-        .select('*, profile(full_name)', const FetchOptions(count: CountOption.exact))
+        .select('*, profile(full_name)')
         .order('created_at', ascending: false)
         .range(from, to);
 
+    // 2. Get the total count for pagination
+    // head: true means we only want the count, not the data.
+    final countResponse = await _supabase
+        .from('posts')
+        .select('id')
+        .order('created_at', ascending: false);
+    
+    final totalCount = countResponse.length;
+
     return {
-      'posts': (response.data as List).map((json) => Post.fromJson(json)).toList(),
-      'totalCount': response.count ?? 0,
+      'posts': (postsResponse as List).map((json) => Post.fromJson(json)).toList(),
+      'totalCount': totalCount,
     };
   }
 

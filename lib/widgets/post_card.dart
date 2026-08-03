@@ -110,7 +110,7 @@ class PostCard extends StatelessWidget {
               // IMAGES: A horizontally scrollable row
               if (post.imageUrls.isNotEmpty)
                 SizedBox(
-                  height: 500, // Increased to show face fully
+                  height: 500, // Fixed height to keep feed consistent
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: post.imageUrls.length,
@@ -131,13 +131,14 @@ class PostCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                             child: Image.network(
                               post.imageUrls[index],
-                              width: 350,
-                              fit: BoxFit.cover,
-                              alignment: Alignment.topCenter, // Focus on the top/face
+                              // Removed fixed width so it can be reactive
+                              fit: BoxFit.fitHeight, 
+                              alignment: Alignment.topCenter,
                               loadingBuilder: (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
                                 return Container(
-                                  width: 350,
+                                  // Temporary width while loading
+                                  width: 300,
                                   color: Colors.grey[200],
                                   child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                                 );

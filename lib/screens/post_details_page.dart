@@ -185,7 +185,7 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
                   // 3. POST PHOTOS (Horizontal scrollable gallery)
                   if (post.imageUrls.isNotEmpty)
                     SizedBox(
-                      height: 500, // Increased to show face fully
+                      height: 500, // Keeps height consistent with feed
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         itemCount: post.imageUrls.length,
@@ -197,9 +197,9 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
                               borderRadius: BorderRadius.circular(12),
                               child: Image.network(
                                 post.imageUrls[index], 
-                                width: 350, 
-                                fit: BoxFit.cover,
-                                alignment: Alignment.topCenter, // Focus on the face
+                                // Removed fixed width for reactivity
+                                fit: BoxFit.fitHeight,
+                                alignment: Alignment.topCenter,
                               ),
                             ),
                           ),

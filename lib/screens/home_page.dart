@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
     final postProvider = context.watch<PostProvider>();
 
     return Scaffold(
-      app_bar: AppBar(
+      appBar: AppBar(
         title: const Text('Forum App'),
         actions: [
           if (auth.user != null)
