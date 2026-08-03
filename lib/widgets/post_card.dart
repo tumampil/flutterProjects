@@ -110,13 +110,13 @@ class PostCard extends StatelessWidget {
               // IMAGES: A horizontally scrollable row
               if (post.imageUrls.isNotEmpty)
                 SizedBox(
-                  height: 180,
+                  height: 300,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: post.imageUrls.length,
                     itemBuilder: (context, index) {
                       return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
+                        padding: const EdgeInsets.only(right: 12.0),
                         child: GestureDetector(
                           onTap: () {
                             // Open image in full screen.
@@ -128,15 +128,15 @@ class PostCard extends StatelessWidget {
                             );
                           },
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                             child: Image.network(
                               post.imageUrls[index],
-                              width: 280,
+                              width: 350,
                               fit: BoxFit.cover,
                               loadingBuilder: (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
                                 return Container(
-                                  width: 280,
+                                  width: 350,
                                   color: Colors.grey[200],
                                   child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                                 );

@@ -185,17 +185,17 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
                   // 3. POST PHOTOS (Horizontal scrollable gallery)
                   if (post.imageUrls.isNotEmpty)
                     SizedBox(
-                      height: 180,
+                      height: 400,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         itemCount: post.imageUrls.length,
                         itemBuilder: (context, index) => Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
+                          padding: const EdgeInsets.only(right: 12.0),
                           child: GestureDetector(
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FullScreenImageViewer(imageUrl: post.imageUrls[index]))),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(post.imageUrls[index], width: 280, fit: BoxFit.cover),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(post.imageUrls[index], width: 350, fit: BoxFit.cover),
                             ),
                           ),
                         ),
@@ -366,8 +366,8 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
                                       children: comment.imageUrls.map((url) => GestureDetector(
                                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FullScreenImageViewer(imageUrl: url))),
                                         child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(4),
-                                          child: Image.network(url, width: 80, height: 80, fit: BoxFit.cover),
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: Image.network(url, width: 150, height: 150, fit: BoxFit.cover),
                                         ),
                                       )).toList(),
                                     ),
