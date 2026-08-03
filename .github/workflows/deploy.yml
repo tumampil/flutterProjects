@@ -1,0 +1,34 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # This script runs every time you push to the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Get your code from GitHub
+      - uses: actions/checkout@v3
+
+      # 2. Install Flutter on the virtual machine
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      # 3. Download the packages (Provider, Supabase, etc.)
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 4. Build the Web version of your app
+      # IMPORTANT: Replace 'blog_forum_app' with your ACTUAL GitHub repository name if it's different.
+      - name: Build Web
+        run: flutter build web --base-href "/${{ github.event.repository.name }}/"
+
+      # 5. Take the built files and move them to the 'gh-pages' branch
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
