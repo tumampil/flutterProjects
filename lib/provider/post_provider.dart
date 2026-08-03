@@ -14,65 +14,43 @@ class PostProvider extends ChangeNotifier {
   // 2. Variables to store the current list of posts and loading status.
   List<Post> _posts = [];
   bool _isLoading = false;
-  bool _isFetchingMore = false;
   int _currentPage = 0;
-  bool _hasMore = true; // True if there are still more posts to load from the server.
-  String? _errorMessage; // Store errors to show in the UI.
+  int _totalCount = 0;
+  final int _pageSize = 5;
+  String? _errorMessage;
 
   // 3. Simple ways for the UI to read our state.
   List<Post> get posts => _posts;
   bool get isLoading => _isLoading;
-  bool get isFetchingMore => _isFetchingMore;
-  bool get hasMore => _hasMore;
+  int get currentPage => _currentPage;
+  int get totalCount => _totalCount;
+  int get totalPages => (_totalCount / _pageSize).ceil();
   String? get errorMessage => _errorMessage;
 
-  // REFRESH: Clear everything and load the first set of posts again.
-  Future<void> fetchPosts() async {
-    _isLoading = true; // Show loading spinner.
-    _currentPage = 0;
-    _hasMore = true;
+  // FETCH: Get posts for a specific page (Google-style).
+  Future<void> fetchPosts({int page = 0}) async {
+    _isLoading = true;
+    _currentPage = page;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final fetchedPosts = await _postService.getPosts(page: _currentPage, pageSize: 5);
-      _posts = fetchedPosts;
-      
-      // If we got fewer than 5 posts, it means we reached the end of the list.
-      if (fetchedPosts.length < 5) _hasMore = false;
+      final result = await _postService.getPosts(page: _currentPage, pageSize: _pageSize);
+      _posts = result['posts'] as List<Post>;
+      _totalCount = result['totalCount'] as int;
     } catch (e) {
       _errorMessage = e.toString();
       debugPrint('Error fetching posts: $e');
     } finally {
-      _isLoading = false; // Hide loading spinner.
+      _isLoading = false;
       notifyListeners();
     }
   }
 
-  // LOAD MORE: This is called when you scroll to the bottom.
-  Future<void> fetchMorePosts() async {
-    // Stop if we are already loading or if there are no more posts to get.
-    if (_isFetchingMore || !_hasMore) return;
-
-    _isFetchingMore = true;
-    notifyListeners();
-
-    try {
-      _currentPage++; // Go to the next page.
-      final morePosts = await _postService.getPosts(page: _currentPage, pageSize: 5);
-      
-      if (morePosts.isEmpty) {
-        _hasMore = false; // No more posts to load.
-      } else {
-        _posts.addAll(morePosts); // Add the new posts to our current list.
-        if (morePosts.length < 5) _hasMore = false;
-      }
-    } catch (e) {
-      debugPrint('Error fetching more posts: $e');
-      _currentPage--; // Go back a page if it failed.
-    } finally {
-      _isFetchingMore = false;
-      notifyListeners();
+  // Helper to jump to a specific page number.
+  void goToPage(int page) {
+    if (page >= 0 && page < totalPages) {
+      fetchPosts(page: page);
     }
   }
 

@@ -18,47 +18,24 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // 1. This controller lets us "listen" to the user scrolling.
-  final ScrollController _scrollController = ScrollController();
-
   @override
   void initState() {
     super.initState();
-    
-    // 2. Load the first set of posts as soon as the page opens.
+    // Load the first page as soon as the app opens.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      context.read<PostProvider>().fetchPosts();
+      context.read<PostProvider>().fetchPosts(page: 0);
     });
-
-    // 3. Watch for when the user reaches the bottom of the list.
-    _scrollController.addListener(() {
-      // If the user scrolls to 90% of the page, tell the brain to load more posts.
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.9) {
-        if (!mounted) return;
-        context.read<PostProvider>().fetchMorePosts();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    // 4. Clean up the scroll controller when we leave the page.
-    _scrollController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Watch for login changes and new posts.
     final auth = context.watch<AuthProvider>();
     final postProvider = context.watch<PostProvider>();
 
     return Scaffold(
-      appBar: AppBar(
+      app_bar: AppBar(
         title: const Text('Forum App'),
         actions: [
-          // 5. If logged in, show the Logout button. If not, show the Login button.
           if (auth.user != null)
             IconButton(
               icon: const Icon(Icons.logout),
@@ -68,63 +45,101 @@ class _HomePageState extends State<HomePage> {
           else
             TextButton(
               onPressed: () => context.push('/login'),
-              child: const Text(
-                'Login',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              child: const Text('Login', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // 1. THE LIST OF POSTS
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () => postProvider.fetchPosts(page: postProvider.currentPage),
+              child: postProvider.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : postProvider.posts.isEmpty
+                      ? const Center(child: Text('No posts found.'))
+                      : ListView.builder(
+                          itemCount: postProvider.posts.length,
+                          itemBuilder: (context, index) {
+                            final post = postProvider.posts[index];
+                            return PostCard(
+                              post: post,
+                              onTap: () => context.push('/post/${post.id}'),
+                            );
+                          },
+                        ),
+            ),
+          ),
+
+          // 2. GOOGLE-STYLE PAGINATION (1 2 3 4 5...)
+          if (postProvider.totalPages > 1)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: const Offset(0, -2))],
+              ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Previous Button
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      onPressed: postProvider.currentPage > 0 
+                          ? () => postProvider.goToPage(postProvider.currentPage - 1) 
+                          : null,
+                    ),
+                    
+                    // Page Numbers
+                    ...List.generate(postProvider.totalPages, (index) {
+                      final isSelected = index == postProvider.currentPage;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: InkWell(
+                          onTap: () => postProvider.goToPage(index),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isSelected ? Colors.blue : Colors.transparent,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '${index + 1}',
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.blue,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+
+                    // Next Button
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right),
+                      onPressed: postProvider.currentPage < postProvider.totalPages - 1 
+                          ? () => postProvider.goToPage(postProvider.currentPage + 1) 
+                          : null,
+                    ),
+                  ],
+                ),
               ),
             ),
         ],
       ),
-      
-      // 6. Pull-to-refresh allows user to drag the list down to reload.
-      body: RefreshIndicator(
-        onRefresh: () => postProvider.fetchPosts(),
-        child: postProvider.isLoading && postProvider.posts.isEmpty
-            ? const Center(child: CircularProgressIndicator()) // First-time loader
-            : postProvider.posts.isEmpty
-                ? const Center(child: Text('No posts found. Be the first to post!'))
-                : ListView.builder(
-                    controller: _scrollController,
-                    // We add 1 to the count if there are more posts to load (for the spinner).
-                    itemCount: postProvider.posts.length + (postProvider.hasMore ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      
-                      // 7. If this is the extra item at the bottom, show a spinner.
-                      if (index == postProvider.posts.length) {
-                        return const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      }
-
-                      // 8. Show each individual post card.
-                      final post = postProvider.posts[index];
-                      return PostCard(
-                        post: post,
-                        onTap: () {
-                          // 9. Go to the details page for this specific post.
-                          context.push('/post/${post.id}');
-                        },
-                      );
-                    },
-                  ),
-      ),
-      
-      // 10. The "+" button to make a new post.
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Check if user is logged in first.
           if (auth.user != null) {
             context.push('/create-post');
           } else {
-            // If not logged in, show a message and go to Login page.
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Please login to create a post')),
-            );
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please login to post')));
             context.push('/login');
           }
         },
-        tooltip: 'Create Post',
         child: const Icon(Icons.add),
       ),
     );

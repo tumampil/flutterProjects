@@ -8,22 +8,22 @@ import '../models/post.dart';
 class PostService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  // FETCH: Get a list of posts from the database.
-  // We use "pagination" to only get a few posts at a time so the app stays fast.
-  Future<List<Post>> getPosts({int page = 0, int pageSize = 5}) async {
-    // 1. Calculate which posts to get (e.g., from #0 to #9).
+  // FETCH: Get a list of posts and the total count for pagination.
+  Future<Map<String, dynamic>> getPosts({int page = 0, int pageSize = 5}) async {
     final from = page * pageSize;
     final to = from + pageSize - 1;
 
-    // 2. Ask Supabase for the posts.
+    // We use 'count: CountOption.exact' to know how many total posts exist.
     final response = await _supabase
         .from('posts')
-        .select('*, profile(full_name)') // Only get the author's name.
-        .order('created_at', ascending: false) // Show newest posts first.
+        .select('*, profile(full_name)', const FetchOptions(count: CountOption.exact))
+        .order('created_at', ascending: false)
         .range(from, to);
 
-    // 3. Turn the list of raw data into a list of "Post" objects for the app.
-    return (response as List).map((json) => Post.fromJson(json)).toList();
+    return {
+      'posts': (response.data as List).map((json) => Post.fromJson(json)).toList(),
+      'totalCount': response.count ?? 0,
+    };
   }
 
   // CREATE: Save a new post to the database.
