@@ -210,17 +210,17 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
                       elevation: 0,
                       color: Colors.grey[50],
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(20), // More rounded like modern apps
                         side: BorderSide(color: Colors.grey[200]!),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4), // Tighter vertical padding
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (_editingComment != null)
                               Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
+                                padding: const EdgeInsets.only(top: 8.0),
                                 child: Row(
                                   children: [
                                     const Icon(Icons.edit, size: 14, color: Colors.blue),
@@ -243,41 +243,46 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
                               decoration: const InputDecoration(
                                 hintText: 'Write a comment...',
                                 border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 10),
                               ),
-                              maxLines: 3,
+                              minLines: 1,
+                              maxLines: 4,
                             ),
-                            const SizedBox(height: 8),
                             
                             // Image Previews for the comment being written
                             if (_commentImages.isNotEmpty)
-                              SizedBox(
-                                height: 50,
-                                child: ListView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: _commentImages.length,
-                                  itemBuilder: (context, index) => Padding(
-                                    padding: const EdgeInsets.only(right: 8.0),
-                                    child: Stack(
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(4), 
-                                          child: _commentImages[index].url != null
-                                              ? Image.network(_commentImages[index].url!, width: 50, height: 50, fit: BoxFit.cover)
-                                              : Image.memory(_commentImages[index].bytes!, width: 50, height: 50, fit: BoxFit.cover),
-                                        ),
-                                        Positioned(right: 0, top: 0, child: GestureDetector(onTap: () => setState(() => _commentImages.removeAt(index)), child: Container(color: Colors.black54, child: const Icon(Icons.close, size: 14, color: Colors.white)))),
-                                      ],
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: SizedBox(
+                                  height: 50,
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: _commentImages.length,
+                                    itemBuilder: (context, index) => Padding(
+                                      padding: const EdgeInsets.only(right: 8.0),
+                                      child: Stack(
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(4), 
+                                            child: _commentImages[index].url != null
+                                                ? Image.network(_commentImages[index].url!, width: 50, height: 50, fit: BoxFit.cover)
+                                                : Image.memory(_commentImages[index].bytes!, width: 50, height: 50, fit: BoxFit.cover),
+                                          ),
+                                          Positioned(right: 0, top: 0, child: GestureDetector(onTap: () => setState(() => _commentImages.removeAt(index)), child: Container(color: Colors.black54, child: const Icon(Icons.close, size: 14, color: Colors.white)))),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             
-                            const SizedBox(height: 8),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.add_a_photo_outlined, color: Colors.grey),
+                                  visualDensity: VisualDensity.compact, // Make icon buttons smaller
+                                  icon: const Icon(Icons.add_a_photo_outlined, color: Colors.grey, size: 20),
                                   onPressed: () async {
                                     final picked = await _picker.pickMultiImage();
                                     if (picked.isNotEmpty) {
@@ -288,16 +293,11 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
                                     }
                                   },
                                 ),
-                                ElevatedButton(
+                                TextButton( // Use TextButton for a sleeker look
                                   onPressed: commentProvider.isLoading ? null : _onAddComment,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                  ),
                                   child: commentProvider.isLoading
-                                      ? const SizedBox(width: 15, height: 15, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                      : Text(_editingComment != null ? 'Save' : 'Post Comment'),
+                                      ? const SizedBox(width: 15, height: 15, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blue))
+                                      : Text(_editingComment != null ? 'Save' : 'Post', style: const TextStyle(fontWeight: FontWeight.bold)),
                                 ),
                               ],
                             ),
