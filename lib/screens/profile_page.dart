@@ -17,7 +17,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // 1. A box to hold the name you type.
+  // 1.A box to hold the name you type.
   final TextEditingController _nameController = TextEditingController();
 
   @override
