@@ -14,7 +14,7 @@ class CommentService {
         .from('comments')
         .select('*, profile(full_name)') // Get profile info too.
         .eq('post_id', postId) // Only get comments for THIS post.
-        .order('created_at', ascending: true); // Oldest comments first.
+        .order('created_at', ascending: false); // Show newest comments first.
 
     return (response as List).map((json) => Comment.fromJson(json)).toList();
   }

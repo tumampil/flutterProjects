@@ -205,8 +205,20 @@ class _CreatePostPageState extends State<CreatePostPage> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: img.url != null
-                            ? Image.network(img.url!, fit: BoxFit.cover, width: double.infinity, height: double.infinity)
-                            : Image.memory(img.bytes!, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
+                            ? Image.network(
+                                img.url!, 
+                                fit: BoxFit.cover, 
+                                width: double.infinity, 
+                                height: double.infinity,
+                                alignment: Alignment.topCenter, // Focus on the face
+                              )
+                            : Image.memory(
+                                img.bytes!, 
+                                fit: BoxFit.cover, 
+                                width: double.infinity, 
+                                height: double.infinity,
+                                alignment: Alignment.topCenter, // Focus on the face
+                              ),
                       ),
                       Positioned(
                         right: 0,

@@ -16,7 +16,9 @@ I have implemented all the requested features and bug fixes to improve the user 
 
 ### 3. Gallery & Image Viewing
 - **Horizontal Gallery**: Multiple images in a post are now displayed in a horizontally scrollable gallery on the main feed.
+- **Improved Visibility**: Increased the image height to **500** and set the alignment to **topCenter**. This ensures that faces and important details at the top of photos are fully visible without being cropped out.
 - **Click-to-Zoom**: All images (in posts and comments) are now clickable. Clicking an image opens it in a full-screen interactive viewer with pan and zoom support.
+- **Large Previews**: Comment images and creation-page previews are also larger and aligned to focus on the subjects.
 
 ### 4. Robust Pagination
 - Updated the pagination logic to load **5 posts per page** to ensure fast loading times and a smoother scrolling experience.

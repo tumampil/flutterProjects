@@ -110,7 +110,7 @@ class PostCard extends StatelessWidget {
               // IMAGES: A horizontally scrollable row
               if (post.imageUrls.isNotEmpty)
                 SizedBox(
-                  height: 300,
+                  height: 500, // Increased to show face fully
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: post.imageUrls.length,
@@ -133,6 +133,7 @@ class PostCard extends StatelessWidget {
                               post.imageUrls[index],
                               width: 350,
                               fit: BoxFit.cover,
+                              alignment: Alignment.topCenter, // Focus on the top/face
                               loadingBuilder: (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
                                 return Container(

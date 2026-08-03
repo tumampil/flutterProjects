@@ -185,7 +185,7 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
                   // 3. POST PHOTOS (Horizontal scrollable gallery)
                   if (post.imageUrls.isNotEmpty)
                     SizedBox(
-                      height: 400,
+                      height: 500, // Increased to show face fully
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         itemCount: post.imageUrls.length,
@@ -195,7 +195,12 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FullScreenImageViewer(imageUrl: post.imageUrls[index]))),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: Image.network(post.imageUrls[index], width: 350, fit: BoxFit.cover),
+                              child: Image.network(
+                                post.imageUrls[index], 
+                                width: 350, 
+                                fit: BoxFit.cover,
+                                alignment: Alignment.topCenter, // Focus on the face
+                              ),
                             ),
                           ),
                         ),
